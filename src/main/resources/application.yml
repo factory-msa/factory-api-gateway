@@ -1,0 +1,29 @@
+server:
+  port: 8000
+
+eureka:
+  instance:
+    instance-id: factory-gateway-service
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+spring:
+  application:
+    name: factory-gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: factory-coupon-service
+          uri: http://localhost:10001/
+          predicates:
+            - Path=/api/v1/coupons/**
+        - id: factory-product-service
+          uri: http://localhost:10002/
+          predicates:
+            - Path=/api/v1/products/**
+      httpclient:
+        connect-timeout: 10000
+        response-timeout: 10s
