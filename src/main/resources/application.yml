@@ -1,18 +1,11 @@
 server:
   port: 8000
 
-eureka:
-  instance:
-    instance-id: factory-gateway-service
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-
 spring:
   application:
-    name: factory-gateway-service
+    name: gateway
+  config:
+    import: optional:configserver:http://localhost:8888
   cloud:
     gateway:
       routes:
@@ -27,7 +20,22 @@ spring:
         - id: factory-issuance-service
           uri: http://localhost:10003/
           predicates:
-            - Path=/api/v1/issuances/**
+            - Path=/api/v1/issuance/**
       httpclient:
         connect-timeout: 10000
         response-timeout: 10s
+      default-filters:
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway GlobalFilter
+            preLogger: true
+            postLogger: true
+
+eureka:
+  instance:
+    instance-id: gateway
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
