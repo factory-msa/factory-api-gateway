@@ -27,9 +27,7 @@ spring:
         connect-timeout: 10000
         response-timeout: 10s
       default-filters:
-        - name:
-            - CustomHeaderFilter
-            - CustomLoggingFilter
+        - name: CustomLoggingFilter
           args:
             baseMessage: Spring Cloud Gateway GlobalFilter
             preLogger: true
