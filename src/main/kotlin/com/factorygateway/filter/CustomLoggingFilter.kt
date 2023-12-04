@@ -2,7 +2,7 @@ package com.factorygateway.filter
 
 import com.factorygateway.domain.RequestLoggingEntity
 import com.factorygateway.domain.RequestLoggingRepository
-import org.slf4j.LoggerFactory
+import com.factorygateway.support.GlobalTransactionIdGenerator.Companion.GLOBAL_TRANSACTION_ID_HEADER
 import org.springframework.cloud.gateway.filter.GatewayFilter
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory
@@ -11,27 +11,23 @@ import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ServerWebExchange
 
-
 @Component
 class CustomLoggingFilter(
     private val repository: RequestLoggingRepository
 ) : AbstractGatewayFilterFactory<CustomLoggingFilter.Config>(Config::class.java) {
 
-    private val log = LoggerFactory.getLogger(javaClass)
-
     override fun apply(config: Config): GatewayFilter {
         return GatewayFilter { exchange: ServerWebExchange, chain: GatewayFilterChain ->
             val request: ServerHttpRequest = exchange.request
-            log.debug("Global Filter baseMessage : {}", config.baseMessage)
 
-            val id = request.headers[GLOBAL_TRANSACTION_ID]!![0]
+            val globalTransactionId = request.headers[GLOBAL_TRANSACTION_ID_HEADER]?.get(0) ?: ""
             val uri = request.uri.toString()
             val method = request.methodValue
             val headers = getHeaders(request.headers)
 
             // TODO: queryParams, body
             repository.save(
-                RequestLoggingEntity(id, uri, method, headers, "")
+                RequestLoggingEntity(globalTransactionId, uri, method, headers, "")
             )
 
             chain.filter(exchange)
@@ -42,10 +38,6 @@ class CustomLoggingFilter(
         return headers.entries
             .flatMap { entry -> entry.value.map { entry.key to it } }
             .joinToString(separator = "\n") { (key, value) -> "$key: $value" }
-    }
-
-    companion object {
-        private const val GLOBAL_TRANSACTION_ID = "GTID"
     }
 
     data class Config(
