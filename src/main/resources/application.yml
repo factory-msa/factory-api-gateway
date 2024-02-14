@@ -8,6 +8,13 @@ spring:
     import: optional:configserver:http://localhost:8888
   profiles:
     active: local
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
   cloud:
     gateway:
       routes:
@@ -35,7 +42,7 @@ spring:
 
 eureka:
   instance:
-    instance-id: gateway
+    instance-id: gateway-service
   client:
     register-with-eureka: true
     fetch-registry: true
